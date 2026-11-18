@@ -12,8 +12,8 @@ WARNING_SIGN = "warning_sign"
 # "planning" --> Difficulty planning or solving problems	
 # "visual_spatial" --> Trouble understanding visual images or spatial relationships
 	
-# anwsers dictionary to hold anwsers to questions
-anwsers = {
+# answer dictionary to hold answer to questions
+answer = {
     "memory_loss" : "",
     "confusion_time_place" : "",
     "familiar_tasks" : "",
@@ -72,8 +72,8 @@ questions = {
 
 class RuleAlzheimer:
 
-    def __init__(self,anwsers:dict):
-        self.anwsers = anwsers
+    def __init__(self,answer:dict):
+        self.answer = answer
         self.assumption = "Team assumption"
         self.confidence_disclaimer = (
             "Note: Confidence scores (0.0-1.0) reflect rule-matching strength and data completeness, NOT calibrated clinical probability."
@@ -83,9 +83,9 @@ class RuleAlzheimer:
         confidence = weighted_probability * ((total_questions-unknown_questions)/total_questions)
         
         '''
-        unknown_count = sum(1 for value in self.anwsers.values() if value == "don't know")
-        data_completeness = (len(self.anwsers) - unknown_count)/len(self.anwsers)
-        return weighted_prob * data_completeness
+        unknown_count = sum(1 for value in self.answer.values() if value == "don't know")
+        data_completeness = (len(self.answer) - unknown_count)/len(self.answer)
+        return round(weighted_prob * data_completeness,2)
     
     def print_rules(self):
         '''
@@ -93,7 +93,7 @@ class RuleAlzheimer:
             
         '''
         self.rules = []
-        no_of_signs = sum(1 for value in self.anwsers.values() if value == "yes")
+        no_of_signs = sum(1 for value in self.answer.values() if value == "yes")
             # compound rules
         if  no_of_signs == 2:
             self.rules.append(("Possible cognitive decline",self.calculate_confidence(0.60),"Schedule a routine healthcare evaluation","Two signs affecting more than one area of daily life",self.assumption,"If there are two signs or symptoms then possible cognitive decline, recommend a routine healthcare evaluation" ))
@@ -108,7 +108,7 @@ class RuleAlzheimer:
         # base rules --> When only one sign is observed
         '''
         To Do
-        if self.anwsers["memory_loss"] == "yes":
+        if self.answer["memory_loss"] == "yes":
             self.rules.append((conclusion,confidence,advice,reason,source,str(rule))
         
         Remember to add a rule for when no warning signs are found
