@@ -106,16 +106,119 @@ class RuleAlzheimer:
              
         
         # base rules --> When only one sign is observed
-        '''
-        To Do
-        if self.answer["memory_loss"] == "yes":
-            self.rules.append((conclusion,confidence,advice,reason,source,str(rule))
-        
-        Remember to add a rule for when no warning signs are found
-        
-        '''
-        return self.rules # [(conclusion,confidence,advice,reason,source,str(rule))]
-    
+        base_rules = {
+
+            "memory_loss": (
+                "Possible memory impairment",
+                "Monitor memory changes and keep records.",
+                "Memory problems may indicate changes in memory functioning."
+            ),
+
+            "confusion_time_place": (
+                "Possible orientation concern",
+                "Seek professional cognitive assessment.",
+                "Confusion about time or place may indicate changes in orientation."
+            ),
+
+            "familiar_tasks": (
+                "Possible difficulty with daily functioning",
+                "Schedule a routine healthcare evaluation.",
+                "Difficulty completing familiar tasks may indicate changes in daily functioning."
+            ),
+
+            "language": (
+                "Possible communication concern",
+                "Consult a healthcare professional.",
+                "Difficulty finding words or following conversations may indicate communication changes."
+            ),
+
+            "misplacing": (
+                "Possible memory-related concern",
+                "Monitor memory changes and keep records.",
+                "Frequently misplacing objects may indicate changes in memory functioning."
+            ),
+
+            "judgment": (
+                "Possible judgment concern",
+                "Arrange a healthcare evaluation.",
+                "Poor judgment may indicate changes in decision-making abilities."
+            ),
+
+            "mood_personality": (
+                "Possible behavioural changes",
+                "Consult a healthcare professional.",
+                "Changes in mood or personality may indicate behavioural changes."
+            ),
+
+            "withdrawal": (
+                "Possible social withdrawal concern",
+                "Monitor changes in social participation.",
+                "Withdrawal from social activities may indicate changes in everyday functioning."
+            ),
+
+            "planning": (
+                "Possible planning and reasoning concern",
+                "Schedule a healthcare evaluation.",
+                "Difficulty planning or solving problems may indicate changes in reasoning."
+            ),
+
+            "visual_spatial": (
+                "Possible visual-spatial concern",
+                "Seek professional assessment.",
+                "Difficulty understanding visual information may indicate visual-spatial changes."
+            )
+        }
+
+        if no_of_signs == 1:
+
+            for sign, details in base_rules.items():
+
+                if self.answer[sign] == "yes":
+
+                    conclusion, advice, reason = details
+
+                    self.rules.append((
+                        conclusion,
+                        self.calculate_confidence(0.40),
+                        advice,
+                        reason,
+                        self.assumption,
+                        f"IF {sign} = yes THEN {conclusion}"
+                    ))
+
+                    break
+
+        if no_of_signs == 0:
+
+            unknown_count = sum(
+                1 for value in self.answer.values()
+                if value == "don't know"
+            )
+
+            if unknown_count > 0:
+
+                self.rules.append((
+                    "Insufficient information",
+                    self.calculate_confidence(0.0),
+                    "Collect additional information before reaching a conclusion.",
+                    "No warning signs were confirmed, but some responses were unknown.",
+                    self.assumption,
+                    "IF no warning signs are confirmed AND some answers are unknown THEN insufficient information"
+                ))
+
+            else:
+
+                self.rules.append((
+                    "No warning signs reported",
+                    self.calculate_confidence(0.0),
+                    "No warning signs were reported. Seek professional advice if concerns arise.",
+                    "None of the ten warning signs were reported.",
+                    self.assumption,
+                    "IF all warning signs = no THEN no warning signs reported"
+                ))
+
+        return self.rules
+
 '''
 certainty weights
 	• 0 sign: 0.00 
@@ -126,4 +229,28 @@ certainty weights
 	• 6+ signs: 0.90 
  (CDC notes 1 disruptive sign warrants a doctor visit)
 '''
+
+# i was trying to play around with the code to test it out to know if it would work sha commented it out, i no know sha boss
+# # if __name__ == "__main__":
+
+#     answers = {
+#         "memory_loss": "yes",
+#         "confusion_time_place": "no",
+#         "familiar_tasks": "no",
+#         "language": "no",
+#         "misplacing": "no",
+#         "judgment": "no",
+#         "mood_personality": "no",
+#         "withdrawal": "no",
+#         "planning": "no",
+#         "visual_spatial": "no"
+#     }
+
+#     system = RuleAlzheimer(answers)
+
+#     results = system.print_rules()
+
+#     for result in results:
+#         print(result)
+
 
