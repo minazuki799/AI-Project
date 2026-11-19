@@ -116,16 +116,101 @@ class RuleAlzheimer:
              
         
         # base rules --> When only one sign is observed
-        '''
-        To Do
-        if self.answer["memory_loss"] == "yes":
-            self.rules.append((conclusion,confidence,advice,reason,source,str(rule))
-        
-        Remember to add a rule for when no warning signs are found
-        
-        '''
-        return self.rules # [(conclusion,confidence,advice,reason,source,str(rule))]
-    
+        base_rules = {
+
+            "memory_loss": (
+                "Possible memory impairment",
+                "Monitor memory changes and keep records.",
+                "Memory problems may indicate changes in memory functioning."
+            ),
+
+            "confusion_time_place": (
+                "Possible orientation concern",
+                "Seek professional cognitive assessment.",
+                "Confusion about time or place may indicate changes in orientation."
+            ),
+
+            "familiar_tasks": (
+                "Possible difficulty with daily functioning",
+                "Schedule a routine healthcare evaluation.",
+                "Difficulty completing familiar tasks may indicate changes in daily functioning."
+            ),
+
+            "language": (
+                "Possible communication concern",
+                "Consult a healthcare professional.",
+                "Difficulty finding words or following conversations may indicate communication changes."
+            ),
+
+            "misplacing": (
+                "Possible memory-related concern",
+                "Monitor memory changes and keep records.",
+                "Frequently misplacing objects may indicate changes in memory functioning."
+            ),
+
+            "judgment": (
+                "Possible judgment concern",
+                "Arrange a healthcare evaluation.",
+                "Poor judgment may indicate changes in decision-making abilities."
+            ),
+
+            "mood_personality": (
+                "Possible behavioural changes",
+                "Consult a healthcare professional.",
+                "Changes in mood or personality may indicate behavioural changes."
+            ),
+
+            "withdrawal": (
+                "Possible social withdrawal concern",
+                "Monitor changes in social participation.",
+                "Withdrawal from social activities may indicate changes in everyday functioning."
+            ),
+
+            "planning": (
+                "Possible planning and reasoning concern",
+                "Schedule a healthcare evaluation.",
+                "Difficulty planning or solving problems may indicate changes in reasoning."
+            ),
+
+            "visual_spatial": (
+                "Possible visual-spatial concern",
+                "Seek professional assessment.",
+                "Difficulty understanding visual information may indicate visual-spatial changes."
+            )
+        }
+
+        if no_of_signs == 1:
+
+            for sign, details in base_rules.items():
+
+                if self.answer[sign] == "yes":
+
+                    conclusion, advice, reason = details
+
+                    self.rules.append((
+                        conclusion,
+                        self.calculate_confidence(0.40),
+                        advice,
+                        reason,
+                        self.assumption,
+                        f"IF {sign} = yes THEN {conclusion}"
+                    ))
+
+                    break
+
+        if no_of_signs == 0:
+
+                self.rules.append((
+                    "No warning signs reported",
+                    self.calculate_confidence(0.0),
+                    "No warning signs were reported. Seek professional advice if concerns arise.",
+                    "None of the ten warning signs were reported.",
+                    self.assumption,
+                    "IFall warning signs = no THEN no warning signs reported"
+                ))
+
+        return self.rules
+
 '''
 certainty weights
 	• 0 sign: 0.00 
@@ -147,4 +232,3 @@ Alzheimer's Association. (2023). 10 warning signs of Alzheimer's worksheet. Retr
 
 National Institute on Aging. (n.d.). What are the signs of Alzheimer's disease? U.S. Department of Health and Human Services, National Institutes of Health. Retrieved November 8, 2026, from https://www.nia.nih.gov/health/alzheimers-symptoms-and-diagnosis/what-are-signs-alzheimers-disease
 '''
-
