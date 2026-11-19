@@ -190,31 +190,13 @@ class RuleAlzheimer:
 
         if no_of_signs == 0:
 
-            unknown_count = sum(
-                1 for value in self.answer.values()
-                if value == "don't know"
-            )
-
-            if unknown_count > 0:
-
-                self.rules.append((
-                    "Insufficient information",
-                    self.calculate_confidence(0.0),
-                    "Collect additional information before reaching a conclusion.",
-                    "No warning signs were confirmed, but some responses were unknown.",
-                    self.assumption,
-                    "IF no warning signs are confirmed AND some answers are unknown THEN insufficient information"
-                ))
-
-            else:
-
                 self.rules.append((
                     "No warning signs reported",
                     self.calculate_confidence(0.0),
                     "No warning signs were reported. Seek professional advice if concerns arise.",
                     "None of the ten warning signs were reported.",
                     self.assumption,
-                    "IF all warning signs = no THEN no warning signs reported"
+                    "IFall warning signs = no THEN no warning signs reported"
                 ))
 
         return self.rules
