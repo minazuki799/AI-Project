@@ -206,7 +206,7 @@ class RuleAlzheimer:
                     "No warning signs were reported. Seek professional advice if concerns arise.",
                     "None of the ten warning signs were reported.",
                     self.assumption,
-                    "IFall warning signs = no THEN no warning signs reported"
+                    "IF all warning signs = no THEN no warning signs reported"
                 ))
 
         return self.rules
@@ -222,13 +222,32 @@ certainty weights
  (CDC notes 1 disruptive sign warrants a doctor visit)
 '''
 
-'''
-Source
-Alzheimer's Association. (2023). 10 early signs and symptoms of Alzheimer's and dementia. Retrieved November 8, 2026, from https://www.alz.org/alzheimers-dementia/10_signs
+# Test code used during development (currently disabled)
+# if __name__ == "__main__":
+#
+#     answers = {
+#         "memory_loss": "yes",
+#         "confusion_time_place": "no",
+#         "familiar_tasks": "no",
+#         "language": "no",
+#         "misplacing": "no",
+#         "judgment": "no",
+#         "mood_personality": "no",
+#         "withdrawal": "no",
+#         "planning": "no",
+#         "visual_spatial": "no"
+#     }
+#
+#     system = RuleAlzheimer(answers)
+#     results = system.print_rules()
+#
+#     for result in results:
+#         print(result)
 
-Alzheimer's Association. (2023). 10 warning signs of Alzheimer's. Retrieved November 8, 2026, from https://www.alz.org/getmedia/9f5c3133-9367-488b-a409-1eadc0e7a9fc/alzheimers-dementia-ten_warning-signs-ts.pdf
 
-Alzheimer's Association. (2023). 10 warning signs of Alzheimer's worksheet. Retrieved November 8, 2026, from https://www.alz.org/getmedia/15db9fd4-81c7-449d-a4a8-1db2b9f8707b/alzheimers-dementia-10-warning-signs-worksheet.pdf
+# #Alzheimer's Association. (2023). 10 warning signs of Alzheimer's. Retrieved November 8, 2026, from https://www.alz.org/getmedia/9f5c3133-9367-488b-a409-1eadc0e7a9fc/alzheimers-dementia-ten_warning-signs-ts.pdf
 
-National Institute on Aging. (n.d.). What are the signs of Alzheimer's disease? U.S. Department of Health and Human Services, National Institutes of Health. Retrieved November 8, 2026, from https://www.nia.nih.gov/health/alzheimers-symptoms-and-diagnosis/what-are-signs-alzheimers-disease
-'''
+# Alzheimer's Association. (2023). 10 warning signs of Alzheimer's worksheet. Retrieved November 8, 2026, from https://www.alz.org/getmedia/15db9fd4-81c7-449d-a4a8-1db2b9f8707b/alzheimers-dementia-10-warning-signs-worksheet.pdf
+
+# National Institute on Aging. (n.d.). What are the signs of Alzheimer's disease? U.S. Department of Health and Human Services, National Institutes of Health. Retrieved November 8, 2026, from https://www.nia.nih.gov/health/alzheimers-symptoms-and-diagnosis/what-are-signs-alzheimers-disease
+# '''
