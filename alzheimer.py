@@ -26,6 +26,16 @@ answer = {
     "visual_spatial" : ""
 }
 
+contradictions = [("memory_loss","misplacing"),("memory_loss","confusion_time_place"),("planning", "familiar_tasks")]
+
+'''
+Rationale for contradictions --------------------------------------------------------------
+(memory_loss, misplacing) --> No memory loss, but misplaces objects.
+(memory_loss, confusion_time_place) -->  No memory loss, but presence of confusion about time or place.
+(planning, familiar_tasks) --> no trouble planning or solving problems, but difficulty completing familiar daily tasks.
+--------------------------------------------------------------------------------------------
+'''
+
 questions = {
         "memory_loss":{ 
             "question": "Have you noticed new memory problems that happen often and disrupt daily life?",
@@ -125,5 +135,16 @@ certainty weights
 	• 5 signs: 0.80 
 	• 6+ signs: 0.90 
  (CDC notes 1 disruptive sign warrants a doctor visit)
+'''
+
+'''
+Source
+Alzheimer's Association. (2023). 10 early signs and symptoms of Alzheimer's and dementia. Retrieved November 8, 2026, from https://www.alz.org/alzheimers-dementia/10_signs
+
+Alzheimer's Association. (2023). 10 warning signs of Alzheimer's. Retrieved November 8, 2026, from https://www.alz.org/getmedia/9f5c3133-9367-488b-a409-1eadc0e7a9fc/alzheimers-dementia-ten_warning-signs-ts.pdf
+
+Alzheimer's Association. (2023). 10 warning signs of Alzheimer's worksheet. Retrieved November 8, 2026, from https://www.alz.org/getmedia/15db9fd4-81c7-449d-a4a8-1db2b9f8707b/alzheimers-dementia-10-warning-signs-worksheet.pdf
+
+National Institute on Aging. (n.d.). What are the signs of Alzheimer's disease? U.S. Department of Health and Human Services, National Institutes of Health. Retrieved November 8, 2026, from https://www.nia.nih.gov/health/alzheimers-symptoms-and-diagnosis/what-are-signs-alzheimers-disease
 '''
 
