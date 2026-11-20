@@ -26,6 +26,7 @@ answer = {
     "visual_spatial" : ""
 }
 
+
 contradictions = [("memory_loss","misplacing"),("memory_loss","confusion_time_place"),("planning", "familiar_tasks")]
 
 '''
@@ -79,6 +80,57 @@ questions = {
                     "group": WARNING_SIGN},      
 }  
 
+# additional follow up-questions
+questions["memory_loss"]["follow_up_question"] = (
+    "Have you recently forgotten important information, "
+    "such as appointments or conversations?"
+)
+
+questions["confusion_time_place"]["follow_up_question"] = (
+    "Have you recently become confused about where you are "
+    "or what day or date it is?"
+)
+
+questions["familiar_tasks"]["follow_up_question"] = (
+    "Have you recently struggled to complete everyday activities "
+    "you previously knew how to do?"
+)
+
+questions["language"]["follow_up_question"] = (
+    "Have you recently struggled to find the right words "
+    "or follow conversations?"
+)
+
+questions["misplacing"]["follow_up_question"] = (
+    "Have you recently misplaced everyday items and struggled "
+    "to remember where you put them?"
+)
+
+questions["judgment"]["follow_up_question"] = (
+    "Have you recently made unusual decisions or decisions "
+    "that are out of character for you?"
+)
+
+questions["mood_personality"]["follow_up_question"] = (
+    "Have people close to you noticed unusual changes "
+    "in your mood or personality?"
+)
+
+questions["withdrawal"]["follow_up_question"] = (
+    "Have you recently lost interest in hobbies, work "
+    "or spending time with other people?"
+)
+
+questions["planning"]["follow_up_question"] = (
+    "Have you recently struggled to organise tasks "
+    "or solve familiar problems?"
+)
+
+questions["visual_spatial"]["follow_up_question"] = (
+    "Have you recently had difficulty judging distances "
+    "or understanding visual information?"
+)
+
 
 class RuleAlzheimer:
 
@@ -108,7 +160,7 @@ class RuleAlzheimer:
         if  no_of_signs == 2:
             self.rules.append(("Possible cognitive decline",self.calculate_confidence(0.60),"Schedule a routine healthcare evaluation","Two signs affecting more than one area of daily life",self.assumption,"If there are two signs or symptoms then possible cognitive decline, recommend a routine healthcare evaluation" ))
         elif 3 <= no_of_signs <= 4:
-            self.rules.append(("Possible early Alzheimer's indicators",self.calculate_confidence(0.70),"Seek professional cognitive assessment","Three or four signs affecting multiple areas of daily life indicates a cluster",self.assumption,"If there are three or four signs or symptoms then possible early indicators, recommend a professional cognitive assessment" ))
+            self.rules.append(("Possible early Alzheimer's indicators",self.calculate_confidence(0.70),"Seek professional cognitive assessment","Three or four signs affecting multiple areas of daily life indicates a cluster",self.assumption,"If there are three or four signs or symptoms then possible early Alzheimer's indicators, recommend a professional cognitive assessment" ))
         elif no_of_signs == 5:
             self.rules.append(("Moderate Alzheimer's warning signs",self.calculate_confidence(0.80),"Consult a healthcare professional for further evaluation","Five signs affecting multiple areas of daily life indicates a cluster",self.assumption,"If there are five signs or symptoms then moderate Alzheimer's warning signs, recommend consulting a healthcare professional for further evaluation" ))
         elif no_of_signs >= 6:
@@ -193,7 +245,7 @@ class RuleAlzheimer:
                         advice,
                         reason,
                         self.assumption,
-                        f"IF {sign} = yes THEN {conclusion}"
+                        f"If {sign} = yes THEN {conclusion}"
                     ))
 
                     break
@@ -206,10 +258,94 @@ class RuleAlzheimer:
                     "No warning signs were reported. Seek professional advice if concerns arise.",
                     "None of the ten warning signs were reported.",
                     self.assumption,
-                    "IFall warning signs = no THEN no warning signs reported"
+                    "If all warning signs = no THEN no warning signs reported"
                 ))
 
         return self.rules
+    
+    def audit_rules(self):
+        '''
+        Explains why some rules fired and others did not.
+        '''
+        audit = []
+        if all(v != "" for v in self.answer.values()): # check if all questions are answered
+            yes_counts = sum(value == "yes" for value in self.answer.values())
+            unknown_counts = sum(value == "don't know" for value in self.answer.values()) # accounting for don't knows which could be potential "yes"s
+            max_possible = yes_counts + unknown_counts # maximum no of potential "yes" signs if "don't know" answers are clarified
+            
+            # Audit compound rules
+            rules = [
+                ("Compound Rule 1 (2 signs)", "Possible cognitive decline", 2, 2),
+                ("Compound Rule 2 (3-4 signs)", "Possible early Alzheimer's indicators", 3, 4),
+                ("Compound Rule 3 (5 signs)", "Moderate Alzheimer's warning signs", 5, 5),
+                ("Compound Rule 4 (6+ signs)", "Strong Alzheimer's warning signs", 6, 10),
+            ]
+            
+            for rule_id, conclusion, min_req, max_req in rules:
+                if min_req <= yes_counts <= max_req:
+                    status = "Fires"
+                    reason = f"Condition met: ({yes_counts} 'yes' signs reported)."
+                elif yes_counts > max_req:
+                    status = "Does not fire"
+                    reason = f"Rejected: {yes_counts} 'yes' signs exceeds this rules range ({min_req}-{max_req})."
+                elif max_possible < min_req:
+                    status = "Does not fire"
+                    reason = f"Rejected: only {yes_counts} 'yes' signs, max possible signs is {max_possible}, needs {min_req})."
+                else: # max possible meets min_req
+                    status = "Cannot be evaluated"
+                    reason = f"Pending unknown answers: ({yes_counts} 'yes' + {unknown_counts} 'don't know' could reach {min_req})."
+                audit.append((rule_id, conclusion, status, reason))
+            # Audit Base Rules (Single-sign rules — only fire when yes_counts == 1)e
+            base_rules = {
+                "memory_loss": ("Possible memory impairment","Memory loss"),
+                "confusion_time_place": ("Possible orientation concern","Confusion about time or place"),
+                "familiar_tasks": ("Possible difficulty with daily functioning","Difficulty completing familiar tasks"),
+                "language": ("Possible communication concern","Problems speaking or finding words"),
+                "misplacing": ("Possible memory-related concern","Misplacing objects"),
+                "judgment": ("Possible judgment concern","Poor judgment or decision-making"),
+                "mood_personality": ("Possible behavioural changes","Mood or personality changes"),
+                "withdrawal": ("Possible social withdrawal concern","Withdrawal from social activities"),
+                "planning": ("Possible planning and reasoning concern","Difficulty planning or solving problems"),
+                "visual_spatial": ("Possible visual-spatial concern","Trouble understanding visual images or spatial relationships")
+            }
+            
+            for idx, (symptom, (conclusion,symptom_text)) in enumerate(base_rules.items(), start=5):
+                rule_id = f"Base Rule {idx} ({symptom})"
+                ans = self.answer.get(symptom)
+
+                if yes_counts == 1 and ans == "yes":
+                    status = "Fires"
+                    reason = f"Condition met: '{symptom_text}' is 'yes' and no other signs are confirmed."
+                elif yes_counts > 1:
+                    status = "Does not fire"
+                    reason = f"Rejected: {yes_counts} signs confirmed, so a higher compound rule overrides single-sign rules."
+                elif ans == "no":
+                    status = "Does not fire"
+                    reason = f"Rejected: '{symptom_text}' was reported as 'no'."
+                elif yes_counts == 1 and ans != "yes":
+                    status = "Does not fire"
+                    reason = f"Rejected; another symptom is already the single confirmed 'yes' sign."
+                else:  # yes_count == 0 and ans == "don't know"
+                    status = "Cannot be evaluated"
+                    reason = f"Symptom status for '{symptom_text}' is unknown ('don't know')."
+
+                audit.append((rule_id, conclusion, status, reason))
+        return audit #(rule_id,conclusion,status,reason)
+
+            
+            
+        
+        
+
+# Goals for implementing back tacking -----------------------------------------------
+# Goals require number of 'yes' to satisfy hypothesis
+goals = {
+    "Possible cognitive decline": 2,
+    "Possible early Alzheimer's indicators": 3,
+    "Moderate Alzheimer's warning signs": 5,
+    "Strong Alzheimer's warning signs": 6
+}
+
 
 '''
 certainty weights
