@@ -51,53 +51,38 @@ class InferenceEngine:
                 if {self.answers[symptom1],self.answers[symptom2]} == {"yes","no"}:
                     self.unresolved_contradictions.append((symptom1,symptom2))
     
-    def ask_follow_up_questions(self):
-        for symptom, current_answer in self.answers.items():
+    def ask_follow_up_questions(self): 
+        for symptom, answer in self.answers.items():
 
-            # only ask a follow-up if the answer is "don't know"
-            # and the symptom has not already been followed up
-            if current_answer == "don't know" and symptom not in self.follow_up_asked:
+            if answer == "don't know" and symptom not in self.follow_up_asked:
 
-                # Retrieve the follow-up question from the knowledge base taht is the knowledge base file, alzheimer.py
-                follow_up = self.questions[symptom].get("follow_up_question")
-
-                # If no follow-up question exists, skip this symptom
-                if not follow_up:
-                    continue
-
-                # can also now record that this symptom has received a follow-up
                 self.follow_up_asked.add(symptom)
 
-                print(
-                    Fore.YELLOW
-                    + "\nFollow-up question for "
-                    + symptom.replace("_", " ").title()
-                )
+                print(Fore.YELLOW + "\nFollow-up question for " + symptom.replace("_", " ").title())
 
-                # ask the follow-up question
                 while True:
+                 response = input(
+                    follow_up_questions[symptom] + "\n"
+                ).strip().lower()
 
-                    response = input(follow_up + "\n").strip().lower()
+                if response == "yes":
 
-                    if response == "yes":
+                    # Update the original answer dictionary
+            
+                    self.answers[symptom] = "yes"
 
-                        # this now like updates the original answer dictionary
-                        self.answers[symptom] = "yes"
+                    print(Fore.GREEN + "Answer updated to yes.")
+                    break
 
-                        print(Fore.GREEN + "Answer updated to yes.")
-                        break
+                elif response in ["no", "don't know"]:
 
-                    elif response in ["no", "don't know"]:
+                    # Leave the original answer as don't know
+                    print("No change made. Answer remains don't know.")
+                    break
 
-                        # this then keeps the original answer as "don't know"
-                        print(
-                            "No change made. "
-                            "The original answer remains don't know."
-                        )
-                        break
+                else:
+                    print(Fore.RED + self.input_error_message)
 
-                    else:
-                        print(Fore.RED + self.input_error_message)
     
     def present_conclusions(self,results:list):
         '''

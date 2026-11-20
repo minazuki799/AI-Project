@@ -152,49 +152,6 @@ class RuleAlzheimer:
             "Note: Confidence scores (0.0-1.0) reflect rule-matching strength and data completeness, NOT calibrated clinical probability."
         )
 
-    @staticmethod
-    def _normalize_answer(value):
-        """Normalise yes/no/unknown values for reliable rule matching."""
-        if value is None:
-            return "don't know"
-
-        normalized = str(value).strip().lower()
-        if normalized in ("y", "yes", "true", "1"):
-            return "yes"
-        if normalized in ("n", "no", "false", "0"):
-            return "no"
-        if normalized in (
-            "don't know", "dont know", "unknown", "uncertain", "unsure", ""
-        ):
-            return "don't know"
-        return "don't know"
-
-    def calculate_confidence(self,weighted_prob:float):
-        '''
-        confidence = weighted_probability * ((total_questions-unknown_questions)/total_questions)
-        '''
-        if not isinstance(weighted_prob, (int, float)):
-            raise TypeError("weighted_prob must be numeric")
-        if not 0.0 <= weighted_prob <= 1.0:
-            raise ValueError("weighted_prob must be between 0.0 and 1.0")
-
-        known_answers = [
-            value for value in self.answer.values()
-            if value not in ("don't know", "unknown")
-        ]
-        data_completeness = (
-            len(known_answers) / len(self.answer) if self.answer else 0.0
-        )
-        return round(float(weighted_prob) * data_completeness, 2)
-    
-    def _detect_contradictions(self):
-        """Return concise descriptions of inconsistent symptom combinations."""
-        detected = []
-        for without_sign, with_sign in contradictions:
-            if self.answer.get(without_sign) == "no" and self.answer.get(with_sign) == "yes":
-                detected.append((without_sign, with_sign))
-        return detected
-
     def print_rules(self):
         '''
             returns [(conclusion,confidence,advice,reason,source,str(rule))]
