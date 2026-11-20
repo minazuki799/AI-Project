@@ -77,7 +77,57 @@ questions = {
                     "question": "Have you noticed new trouble understanding what you see or judging distances that happens often and disrupts daily life?",
                     "examples" : ["Trouble understanding visual and spatial relationships","Difficulty reading", "Difficulty judging distance"],
                     "group": WARNING_SIGN},      
-}  
+}
+
+questions["memory_loss"]["follow_up_question"] = (
+    "Have you recently forgotten important information, "
+    "such as appointments or conversations?"
+)
+
+questions["confusion_time_place"]["follow_up_question"] = (
+    "Have you recently become confused about where you are "
+    "or what day or date it is?"
+)
+
+questions["familiar_tasks"]["follow_up_question"] = (
+    "Have you recently struggled to complete everyday activities "
+    "you previously knew how to do?"
+)
+
+questions["language"]["follow_up_question"] = (
+    "Have you recently struggled to find the right words "
+    "or follow conversations?"
+)
+
+questions["misplacing"]["follow_up_question"] = (
+    "Have you recently misplaced everyday items and struggled "
+    "to remember where you put them?"
+)
+
+questions["judgment"]["follow_up_question"] = (
+    "Have you recently made unusual decisions or decisions "
+    "that are out of character for you?"
+)
+
+questions["mood_personality"]["follow_up_question"] = (
+    "Have people close to you noticed unusual changes "
+    "in your mood or personality?"
+)
+
+questions["withdrawal"]["follow_up_question"] = (
+    "Have you recently lost interest in hobbies, work "
+    "or spending time with other people?"
+)
+
+questions["planning"]["follow_up_question"] = (
+    "Have you recently struggled to organise tasks "
+    "or solve familiar problems?"
+)
+
+questions["visual_spatial"]["follow_up_question"] = (
+    "Have you recently had difficulty judging distances "
+    "or understanding visual information?"
+)
 
 
 class RuleAlzheimer:
