@@ -52,59 +52,52 @@ class InferenceEngine:
                     self.unresolved_contradictions.append((symptom1,symptom2))
     
     def ask_follow_up_questions(self):
-        follow_up_questions = {
-            "memory_loss": "Have you recently forgotten important information, such as appointments or conversations?",
-            
-            "confusion_time_place": "Have you recently become confused about where you are or what day or date it is?",
-            
-            "familiar_tasks": "Have you recently struggled to complete everyday activities you previously knew how to do?",
-            
-            "language": "Have you recently struggled to find the right words or follow conversations?",
-            
-            "misplacing": "Have you recently misplaced everyday items and struggled to remember where you put them?",
-            
-            "judgment": "Have you recently made unusual decisions or decisions that are out of character for you?",
-            
-            "mood_personality": "Have people close to you noticed unusual changes in your mood or personality?",
-            
-            "withdrawal": "Have you recently lost interest in hobbies, work or spending time with other people?",
-            
-            "planning": "Have you recently struggled to organise tasks or solve familiar problems?",
-            
-            "visual_spatial": "Have you recently had difficulty judging distances or understanding visual information?"
-        }
-        
-        for symptom, answer in self.answers.items():
+        for symptom, current_answer in self.answers.items():
 
-            if answer == "don't know" and symptom not in self.follow_up_asked:
+            # only ask a follow-up if the answer is "don't know"
+            # and the symptom has not already been followed up
+            if current_answer == "don't know" and symptom not in self.follow_up_asked:
 
+                # Retrieve the follow-up question from the knowledge base taht is the knowledge base file, alzheimer.py
+                follow_up = self.questions[symptom].get("follow_up_question")
+
+                # If no follow-up question exists, skip this symptom
+                if not follow_up:
+                    continue
+
+                # can also now record that this symptom has received a follow-up
                 self.follow_up_asked.add(symptom)
 
-                print(Fore.YELLOW + "\nFollow-up question for " + symptom.replace("_", " ").title())
+                print(
+                    Fore.YELLOW
+                    + "\nFollow-up question for "
+                    + symptom.replace("_", " ").title()
+                )
 
+                # ask the follow-up question
                 while True:
-                 response = input(
-                    follow_up_questions[symptom] + "\n"
-                ).strip().lower()
 
-                if response == "yes":
+                    response = input(follow_up + "\n").strip().lower()
 
-                    # Update the original answer dictionary
-            
-                    self.answers[symptom] = "yes"
+                    if response == "yes":
 
-                    print(Fore.GREEN + "Answer updated to yes.")
-                    break
+                        # this now like updates the original answer dictionary
+                        self.answers[symptom] = "yes"
 
-                elif response in ["no", "don't know"]:
+                        print(Fore.GREEN + "Answer updated to yes.")
+                        break
 
-                    # Leave the original answer as don't know
-                    print("No change made. Answer remains don't know.")
-                    break
+                    elif response in ["no", "don't know"]:
 
-                else:
-                    print(Fore.RED + self.input_error_message)
+                        # this then keeps the original answer as "don't know"
+                        print(
+                            "No change made. "
+                            "The original answer remains don't know."
+                        )
+                        break
 
+                    else:
+                        print(Fore.RED + self.input_error_message)
     
     def present_conclusions(self,results:list):
         '''

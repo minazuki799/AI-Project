@@ -133,26 +133,84 @@ questions["visual_spatial"]["follow_up_question"] = (
 class RuleAlzheimer:
 
     def __init__(self,answer:dict):
-        self.answer = answer
+        if not isinstance(answer, dict):
+            raise TypeError("answer must be a dictionary")
+
+        # Always use the ten questionnaire keys.  Missing answers remain
+        # unknown rather than being interpreted as "no".
+        questionnaire_keys = (
+            "memory_loss", "confusion_time_place", "familiar_tasks",
+            "language", "misplacing", "judgment", "mood_personality",
+            "withdrawal", "planning", "visual_spatial"
+        )
+        self.answer = {
+            key: self._normalize_answer(answer.get(key, "unknown"))
+            for key in questionnaire_keys
+        }
         self.assumption = "Team assumption"
         self.confidence_disclaimer = (
             "Note: Confidence scores (0.0-1.0) reflect rule-matching strength and data completeness, NOT calibrated clinical probability."
         )
+
+    @staticmethod
+    def _normalize_answer(value):
+        """Normalise yes/no/unknown values for reliable rule matching."""
+        if value is None:
+            return "don't know"
+
+        normalized = str(value).strip().lower()
+        if normalized in ("y", "yes", "true", "1"):
+            return "yes"
+        if normalized in ("n", "no", "false", "0"):
+            return "no"
+        if normalized in (
+            "don't know", "dont know", "unknown", "uncertain", "unsure", ""
+        ):
+            return "don't know"
+        return "don't know"
+
     def calculate_confidence(self,weighted_prob:float):
         '''
         confidence = weighted_probability * ((total_questions-unknown_questions)/total_questions)
-        
         '''
-        unknown_count = sum(1 for value in self.answer.values() if value == "don't know")
-        data_completeness = (len(self.answer) - unknown_count)/len(self.answer)
-        return round(weighted_prob * data_completeness,2)
+        if not isinstance(weighted_prob, (int, float)):
+            raise TypeError("weighted_prob must be numeric")
+        if not 0.0 <= weighted_prob <= 1.0:
+            raise ValueError("weighted_prob must be between 0.0 and 1.0")
+
+        known_answers = [
+            value for value in self.answer.values()
+            if value not in ("don't know", "unknown")
+        ]
+        data_completeness = (
+            len(known_answers) / len(self.answer) if self.answer else 0.0
+        )
+        return round(float(weighted_prob) * data_completeness, 2)
     
+    def _detect_contradictions(self):
+        """Return concise descriptions of inconsistent symptom combinations."""
+        detected = []
+        for without_sign, with_sign in contradictions:
+            if self.answer.get(without_sign) == "no" and self.answer.get(with_sign) == "yes":
+                detected.append((without_sign, with_sign))
+        return detected
+
     def print_rules(self):
         '''
             returns [(conclusion,confidence,advice,reason,source,str(rule))]
             
         '''
         self.rules = []
+
+        for without_sign, with_sign in self._detect_contradictions():
+            self.rules.append((
+                "Inconsistent or unusual symptom pattern",
+                self.calculate_confidence(0.35),
+                "Ask the follow-up questions again and clarify both symptoms.",
+                f"{without_sign} was reported as absent while {with_sign} was reported as present.",
+                self.assumption,
+                f"IF {without_sign} = no AND {with_sign} = yes THEN contradictory pattern"
+            ))
         no_of_signs = sum(1 for value in self.answer.values() if value == "yes")
             # compound rules
         if  no_of_signs == 2:
@@ -248,7 +306,9 @@ class RuleAlzheimer:
 
                     break
 
-        if no_of_signs == 0:
+        if no_of_signs == 0 and all(
+            value == "no" for value in self.answer.values()
+        ):
 
                 self.rules.append((
                     "No warning signs reported",
