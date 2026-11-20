@@ -26,6 +26,7 @@ answer = {
     "visual_spatial" : ""
 }
 
+
 contradictions = [("memory_loss","misplacing"),("memory_loss","confusion_time_place"),("planning", "familiar_tasks")]
 
 '''
@@ -77,8 +78,9 @@ questions = {
                     "question": "Have you noticed new trouble understanding what you see or judging distances that happens often and disrupts daily life?",
                     "examples" : ["Trouble understanding visual and spatial relationships","Difficulty reading", "Difficulty judging distance"],
                     "group": WARNING_SIGN},      
-}
+}  
 
+# additional follow up-questions
 questions["memory_loss"]["follow_up_question"] = (
     "Have you recently forgotten important information, "
     "such as appointments or conversations?"
@@ -133,47 +135,32 @@ questions["visual_spatial"]["follow_up_question"] = (
 class RuleAlzheimer:
 
     def __init__(self,answer:dict):
-        if not isinstance(answer, dict):
-            raise TypeError("answer must be a dictionary")
-
-        # Always use the ten questionnaire keys.  Missing answers remain
-        # unknown rather than being interpreted as "no".
-        questionnaire_keys = (
-            "memory_loss", "confusion_time_place", "familiar_tasks",
-            "language", "misplacing", "judgment", "mood_personality",
-            "withdrawal", "planning", "visual_spatial"
-        )
-        self.answer = {
-            key: self._normalize_answer(answer.get(key, "unknown"))
-            for key in questionnaire_keys
-        }
+        self.answer = answer
         self.assumption = "Team assumption"
         self.confidence_disclaimer = (
             "Note: Confidence scores (0.0-1.0) reflect rule-matching strength and data completeness, NOT calibrated clinical probability."
         )
-
+    def calculate_confidence(self,weighted_prob:float):
+        '''
+        confidence = weighted_probability * ((total_questions-unknown_questions)/total_questions)
+        
+        '''
+        unknown_count = sum(1 for value in self.answer.values() if value == "don't know")
+        data_completeness = (len(self.answer) - unknown_count)/len(self.answer)
+        return round(weighted_prob * data_completeness,2)
+    
     def print_rules(self):
         '''
             returns [(conclusion,confidence,advice,reason,source,str(rule))]
             
         '''
         self.rules = []
-
-        for without_sign, with_sign in self._detect_contradictions():
-            self.rules.append((
-                "Inconsistent or unusual symptom pattern",
-                self.calculate_confidence(0.35),
-                "Ask the follow-up questions again and clarify both symptoms.",
-                f"{without_sign} was reported as absent while {with_sign} was reported as present.",
-                self.assumption,
-                f"IF {without_sign} = no AND {with_sign} = yes THEN contradictory pattern"
-            ))
         no_of_signs = sum(1 for value in self.answer.values() if value == "yes")
             # compound rules
         if  no_of_signs == 2:
             self.rules.append(("Possible cognitive decline",self.calculate_confidence(0.60),"Schedule a routine healthcare evaluation","Two signs affecting more than one area of daily life",self.assumption,"If there are two signs or symptoms then possible cognitive decline, recommend a routine healthcare evaluation" ))
         elif 3 <= no_of_signs <= 4:
-            self.rules.append(("Possible early Alzheimer's indicators",self.calculate_confidence(0.70),"Seek professional cognitive assessment","Three or four signs affecting multiple areas of daily life indicates a cluster",self.assumption,"If there are three or four signs or symptoms then possible early indicators, recommend a professional cognitive assessment" ))
+            self.rules.append(("Possible early Alzheimer's indicators",self.calculate_confidence(0.70),"Seek professional cognitive assessment","Three or four signs affecting multiple areas of daily life indicates a cluster",self.assumption,"If there are three or four signs or symptoms then possible early Alzheimer's indicators, recommend a professional cognitive assessment" ))
         elif no_of_signs == 5:
             self.rules.append(("Moderate Alzheimer's warning signs",self.calculate_confidence(0.80),"Consult a healthcare professional for further evaluation","Five signs affecting multiple areas of daily life indicates a cluster",self.assumption,"If there are five signs or symptoms then moderate Alzheimer's warning signs, recommend consulting a healthcare professional for further evaluation" ))
         elif no_of_signs >= 6:
@@ -258,14 +245,12 @@ class RuleAlzheimer:
                         advice,
                         reason,
                         self.assumption,
-                        f"IF {sign} = yes THEN {conclusion}"
+                        f"If {sign} = yes THEN {conclusion}"
                     ))
 
                     break
 
-        if no_of_signs == 0 and all(
-            value == "no" for value in self.answer.values()
-        ):
+        if no_of_signs == 0:
 
                 self.rules.append((
                     "No warning signs reported",
@@ -273,10 +258,94 @@ class RuleAlzheimer:
                     "No warning signs were reported. Seek professional advice if concerns arise.",
                     "None of the ten warning signs were reported.",
                     self.assumption,
-                    "IF all warning signs = no THEN no warning signs reported"
+                    "If all warning signs = no THEN no warning signs reported"
                 ))
 
         return self.rules
+    
+    def audit_rules(self):
+        '''
+        Explains why some rules fired and others did not.
+        '''
+        audit = []
+        if all(v != "" for v in self.answer.values()): # check if all questions are answered
+            yes_counts = sum(value == "yes" for value in self.answer.values())
+            unknown_counts = sum(value == "don't know" for value in self.answer.values()) # accounting for don't knows which could be potential "yes"s
+            max_possible = yes_counts + unknown_counts # maximum no of potential "yes" signs if "don't know" answers are clarified
+            
+            # Audit compound rules
+            rules = [
+                ("Compound Rule 1 (2 signs)", "Possible cognitive decline", 2, 2),
+                ("Compound Rule 2 (3-4 signs)", "Possible early Alzheimer's indicators", 3, 4),
+                ("Compound Rule 3 (5 signs)", "Moderate Alzheimer's warning signs", 5, 5),
+                ("Compound Rule 4 (6+ signs)", "Strong Alzheimer's warning signs", 6, 10),
+            ]
+            
+            for rule_id, conclusion, min_req, max_req in rules:
+                if min_req <= yes_counts <= max_req:
+                    status = "Fires"
+                    reason = f"Condition met: ({yes_counts} 'yes' signs reported)."
+                elif yes_counts > max_req:
+                    status = "Does not fire"
+                    reason = f"Rejected: {yes_counts} 'yes' signs exceeds this rules range ({min_req}-{max_req})."
+                elif max_possible < min_req:
+                    status = "Does not fire"
+                    reason = f"Rejected: only {yes_counts} 'yes' signs, max possible signs is {max_possible}, needs {min_req})."
+                else: # max possible meets min_req
+                    status = "Cannot be evaluated"
+                    reason = f"Pending unknown answers: ({yes_counts} 'yes' + {unknown_counts} 'don't know' could reach {min_req})."
+                audit.append((rule_id, conclusion, status, reason))
+            # Audit Base Rules (Single-sign rules — only fire when yes_counts == 1)e
+            base_rules = {
+                "memory_loss": ("Possible memory impairment","Memory loss"),
+                "confusion_time_place": ("Possible orientation concern","Confusion about time or place"),
+                "familiar_tasks": ("Possible difficulty with daily functioning","Difficulty completing familiar tasks"),
+                "language": ("Possible communication concern","Problems speaking or finding words"),
+                "misplacing": ("Possible memory-related concern","Misplacing objects"),
+                "judgment": ("Possible judgment concern","Poor judgment or decision-making"),
+                "mood_personality": ("Possible behavioural changes","Mood or personality changes"),
+                "withdrawal": ("Possible social withdrawal concern","Withdrawal from social activities"),
+                "planning": ("Possible planning and reasoning concern","Difficulty planning or solving problems"),
+                "visual_spatial": ("Possible visual-spatial concern","Trouble understanding visual images or spatial relationships")
+            }
+            
+            for idx, (symptom, (conclusion,symptom_text)) in enumerate(base_rules.items(), start=5):
+                rule_id = f"Base Rule {idx} ({symptom})"
+                ans = self.answer.get(symptom)
+
+                if yes_counts == 1 and ans == "yes":
+                    status = "Fires"
+                    reason = f"Condition met: '{symptom_text}' is 'yes' and no other signs are confirmed."
+                elif yes_counts > 1:
+                    status = "Does not fire"
+                    reason = f"Rejected: {yes_counts} signs confirmed, so a higher compound rule overrides single-sign rules."
+                elif ans == "no":
+                    status = "Does not fire"
+                    reason = f"Rejected: '{symptom_text}' was reported as 'no'."
+                elif yes_counts == 1 and ans != "yes":
+                    status = "Does not fire"
+                    reason = f"Rejected; another symptom is already the single confirmed 'yes' sign."
+                else:  # yes_count == 0 and ans == "don't know"
+                    status = "Cannot be evaluated"
+                    reason = f"Symptom status for '{symptom_text}' is unknown ('don't know')."
+
+                audit.append((rule_id, conclusion, status, reason))
+        return audit #(rule_id,conclusion,status,reason)
+
+            
+            
+        
+        
+
+# Goals for implementing back tacking -----------------------------------------------
+# Goals require number of 'yes' to satisfy hypothesis
+goals = {
+    "Possible cognitive decline": 2,
+    "Possible early Alzheimer's indicators": 3,
+    "Moderate Alzheimer's warning signs": 5,
+    "Strong Alzheimer's warning signs": 6
+}
+
 
 '''
 certainty weights
@@ -289,32 +358,13 @@ certainty weights
  (CDC notes 1 disruptive sign warrants a doctor visit)
 '''
 
-# Test code used during development (currently disabled)
-# if __name__ == "__main__":
-#
-#     answers = {
-#         "memory_loss": "yes",
-#         "confusion_time_place": "no",
-#         "familiar_tasks": "no",
-#         "language": "no",
-#         "misplacing": "no",
-#         "judgment": "no",
-#         "mood_personality": "no",
-#         "withdrawal": "no",
-#         "planning": "no",
-#         "visual_spatial": "no"
-#     }
-#
-#     system = RuleAlzheimer(answers)
-#     results = system.print_rules()
-#
-#     for result in results:
-#         print(result)
+'''
+Source
+Alzheimer's Association. (2023). 10 early signs and symptoms of Alzheimer's and dementia. Retrieved November 8, 2026, from https://www.alz.org/alzheimers-dementia/10_signs
 
+Alzheimer's Association. (2023). 10 warning signs of Alzheimer's. Retrieved November 8, 2026, from https://www.alz.org/getmedia/9f5c3133-9367-488b-a409-1eadc0e7a9fc/alzheimers-dementia-ten_warning-signs-ts.pdf
 
-# #Alzheimer's Association. (2023). 10 warning signs of Alzheimer's. Retrieved November 8, 2026, from https://www.alz.org/getmedia/9f5c3133-9367-488b-a409-1eadc0e7a9fc/alzheimers-dementia-ten_warning-signs-ts.pdf
+Alzheimer's Association. (2023). 10 warning signs of Alzheimer's worksheet. Retrieved November 8, 2026, from https://www.alz.org/getmedia/15db9fd4-81c7-449d-a4a8-1db2b9f8707b/alzheimers-dementia-10-warning-signs-worksheet.pdf
 
-# Alzheimer's Association. (2023). 10 warning signs of Alzheimer's worksheet. Retrieved November 8, 2026, from https://www.alz.org/getmedia/15db9fd4-81c7-449d-a4a8-1db2b9f8707b/alzheimers-dementia-10-warning-signs-worksheet.pdf
-
-# National Institute on Aging. (n.d.). What are the signs of Alzheimer's disease? U.S. Department of Health and Human Services, National Institutes of Health. Retrieved November 8, 2026, from https://www.nia.nih.gov/health/alzheimers-symptoms-and-diagnosis/what-are-signs-alzheimers-disease
-# '''
+National Institute on Aging. (n.d.). What are the signs of Alzheimer's disease? U.S. Department of Health and Human Services, National Institutes of Health. Retrieved November 8, 2026, from https://www.nia.nih.gov/health/alzheimers-symptoms-and-diagnosis/what-are-signs-alzheimers-disease
+'''
