@@ -5,9 +5,10 @@ from colorama import Fore, init
 init(autoreset=True,strip=False)
 
 class InferenceEngine:
-    def __init__(self,questions:dict,answers:dict,rule_class,contradictions:list,goals:dict):
+    def __init__(self,questions:dict,answers:dict,rule_class,contradictions:list,goals:dict,symptoms_dictionary:dict):
         self.questions = questions
         self.answers = answers
+        self.symptoms_dictionary = symptoms_dictionary
         self.kb = rule_class(self.answers)
         self.contradictions = contradictions
         self.unresolved_contradictions = [] 
@@ -32,7 +33,7 @@ class InferenceEngine:
         self.unresolved_contradictions.clear()
         for symptom1,symptom2 in self.contradictions:
             if {self.answers[symptom1],self.answers[symptom2]} == {"yes","no"}:
-                print(Fore.YELLOW + "Warning: Inconsistency found!\nPossible Inconsistence detected between ",symptom1," and ",symptom2)
+                print(Fore.YELLOW + "Warning: Inconsistency found!\nPossible Inconsistence detected between symptoms ",self.symptoms_dictionary[symptom1]," and ",self.symptoms_dictionary[symptom2])
                 #clarification
                 choice = input("\nWould you like to review and update these answers? (yes/no)").strip().lower()
                 if choice == 'yes':
@@ -50,7 +51,7 @@ class InferenceEngine:
                 
                 # record if contradictory
                 if {self.answers[symptom1],self.answers[symptom2]} == {"yes","no"}:
-                    self.unresolved_contradictions.append((symptom1,symptom2))
+                    self.unresolved_contradictions.append((self.symptoms_dictionary[symptom1],self.symptoms_dictionary[symptom2]))
     
     def ask_follow_up_questions(self): 
         for symptom, answer in self.answers.items():

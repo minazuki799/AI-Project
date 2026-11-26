@@ -11,6 +11,19 @@ WARNING_SIGN = "warning_sign"
 # "withdrawal" --> Withdrawal from social activities
 # "planning" --> Difficulty planning or solving problems	
 # "visual_spatial" --> Trouble understanding visual images or spatial relationships
+
+symptoms_dictionary = {
+    "memory_loss": "Memory loss",
+    "confusion_time_place": "Confusion about time or place",
+    "familiar_tasks": "Difficulty completing familiar tasks",
+    "language": "Problems speaking or finding words",
+    "misplacing": "Misplacing objects",
+    "judgement": "Poor judgment or decision-making",
+    "mood_personality": "Mood or personality changes",
+    "withdrawal": "Withdrawal from social activities",
+    "planning": "Difficulty planning or solving problems",
+    "visual_spatial": "Trouble understanding visual images or spatial relationships",
+}
 	
 # answer dictionary to hold answer to questions
 answer = {
@@ -26,16 +39,6 @@ answer = {
     "visual_spatial" : ""
 }
 
-
-contradictions = [("memory_loss","misplacing"),("memory_loss","confusion_time_place"),("planning", "familiar_tasks")]
-
-'''
-Rationale for contradictions --------------------------------------------------------------
-(memory_loss, misplacing) --> No memory loss, but misplaces objects.
-(memory_loss, confusion_time_place) -->  No memory loss, but presence of confusion about time or place.
-(planning, familiar_tasks) --> no trouble planning or solving problems, but difficulty completing familiar daily tasks.
---------------------------------------------------------------------------------------------
-'''
 
 questions = {
         "memory_loss":{ 
@@ -130,6 +133,16 @@ questions["visual_spatial"]["follow_up_question"] = (
     "Have you recently had difficulty judging distances "
     "or understanding visual information?"
 )
+
+contradictions = [("memory_loss","misplacing"),("memory_loss","confusion_time_place"),("planning", "familiar_tasks")]
+'''
+Rationale for contradictions --------------------------------------------------------------
+(memory_loss, misplacing) --> No memory loss, but misplaces objects.
+(memory_loss, confusion_time_place) -->  No memory loss, but presence of confusion about time or place.
+(planning, familiar_tasks) --> no trouble planning or solving problems, but difficulty completing familiar daily tasks.
+--------------------------------------------------------------------------------------------
+'''
+
 
 
 class RuleAlzheimer:
@@ -337,7 +350,7 @@ class RuleAlzheimer:
         
         
 
-# Goals for implementing back tacking -----------------------------------------------
+# Goals for implementing backward chaining -----------------------------------------------
 # Goals require number of 'yes' to satisfy hypothesis
 goals = {
     "Possible cognitive decline": 2,

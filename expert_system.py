@@ -1,3 +1,22 @@
+import os 
+import subprocess
+# installing requirements if non-existent
+def install_requirements():
+    """Checks for  libraries in requirement.txt and installs  if missing.
+    """
+    try:
+        import colorama
+        import tabulate
+    except ModuleNotFoundError:
+        print("Missing libraries detected. Installing from requirements.txt...")
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        requirement_file = os.path.join(base_dir, "requirements.txt")
+        
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", requirement_file])
+        print("All requirements installed successfully!\n")
+
+install_requirements()
+
 # importing modules --> Inference Engine and knowledge bases
 import sys
 from colorama import Fore, init
@@ -30,13 +49,14 @@ choice = ask(load_message,warning,constraint)
 
 # loading knowledge base
 if choice == 1:
-    from alzheimer import goals,questions,answer,contradictions,RuleAlzheimer # Alzheimer's KB
+    from alzheimer import goals,questions,answer,contradictions,RuleAlzheimer,symptoms_dictionary # Alzheimer's KB
     system = InferenceEngine(
     questions= questions,
     answers = answer.copy(), # so original answer in KB is not overwritten
     rule_class = RuleAlzheimer,
     contradictions=contradictions,
-    goals=goals    
+    goals=goals,
+    symptoms_dictionary= symptoms_dictionary  
     )
 else:
     pass # no diabetes KB to pull from
