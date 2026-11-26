@@ -188,6 +188,7 @@ class InferenceEngine:
            
         else:
             print(Fore.RED + f"Failure, Could not meet the {condition} conditions for {goal_index_list[choice-1]} hypothesis, only {yes_count} were met before stopping!\n" + Fore.RESET,"")
+  
     
     def explain_rules(self):
         '''

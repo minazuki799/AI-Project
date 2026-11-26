@@ -271,7 +271,7 @@ class RuleAlzheimer:
                     "No warning signs were reported. Seek professional advice if concerns arise.",
                     "None of the ten warning signs were reported.",
                     self.assumption,
-                    "If all warning signs = no THEN no warning signs reported"
+                    "If all warning signs = no or don't know, THEN no warning signs reported"
                 ))
 
         return self.rules
