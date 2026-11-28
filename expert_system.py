@@ -26,7 +26,7 @@ from inferenceengine import InferenceEngine
 
 message = Fore.GREEN + "Successfully Imported All Knowledge Bases and Inference Engine" + Fore.RESET
 print(message)
-disclaimer = "This is a rule-based expert that uses knowledge representation and logical reasoning to provide preliminary decision support for narrowly defined health related scenarios. This knowledge bases in this system only represents Alzheimer's disease and diabetes. This remains an educational tool  It is not a tool for real-world diagnosis. "
+disclaimer = "This is a rule-based expert that uses knowledge representation and logical reasoning to provide preliminary decision support for narrowly defined health related scenarios. This knowledge bases in this system only represents Alzheimer's disease. This remains an educational tool. It is not a tool for real-world diagnosis. "
 print(textwrap.fill(disclaimer, width=50))
 
 # User Input Helper Function
@@ -43,7 +43,7 @@ def ask(message,warning,constraint:list):
 
 # Selecting knowledge base
 warning = Fore.YELLOW + "Warning: you must select integers (1,2)" + Fore.RESET
-load_message =("Select scenario:\nEnter 1 ---> Alzheimer's disease.\nEnter 2 ---> Diabetes\n")
+load_message =("Select scenario:\nEnter 1 ---> Alzheimer's disease.\nEnter 2 ---> Quit\n")
 constraint = [1,2]
 choice = ask(load_message,warning,constraint)
 
@@ -59,7 +59,7 @@ if choice == 1:
     symptoms_dictionary= symptoms_dictionary  
     )
 else:
-    pass # no diabetes KB to pull from
+    sys.exit(Fore.CYAN + "Session Ended" + Fore.RESET)
 
 # Selecting method (forward_chaining or backward_chaining)
 method_warning = Fore.YELLOW + "Warning: you must select integers (1,2)" + Fore.RESET
