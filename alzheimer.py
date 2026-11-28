@@ -1,5 +1,3 @@
-WARNING_SIGN = "warning_sign"
-
 # Keys --> meaning --------------------------------------------------------
 # "memory_loss" --> Memory loss	
 # "confusion_time_place" --> Confusion about time or place
@@ -43,44 +41,44 @@ answer = {
 questions = {
         "memory_loss":{ 
             "question": "Have you noticed new memory problems that happen often and disrupt daily life?",
-            "examples" : ["Forgetting recently learned information","Repeatedly asking the same question","Forgetting important dates or events","Repeating statements"],
-            "group": WARNING_SIGN},
+            "examples" : ["Forgetting recently learned information","Repeatedly asking the same question","Forgetting important dates or events","Repeating statements"]
+            },
         "confusion_time_place" : {
             "question": "Have you noticed new confusion about the time, the date or where you are that happens often and disrupts daily life??",
-            "examples" : ["Getting lost in familiar places"],
-            "group": WARNING_SIGN}, 
+            "examples" : ["Getting lost in familiar places"]
+            }, 
         "familiar_tasks" : {
             "question": "Have you noticed new difficulty completing familiar tasks that happens often and disrupts daily life?",
-            "examples" : ["Inability to follow familiar procedures","Difficulty completing daily tasks"],
-            "group": WARNING_SIGN},
+            "examples" : ["Inability to follow familiar procedures","Difficulty completing daily tasks"]
+            },
         "language" : {
             "question": "Have you noticed new problems speaking or finding the right words that happen often and disrupt daily life?",
-            "examples" : ["Difficulty following conversations"],
-            "group": WARNING_SIGN},
+            "examples" : ["Difficulty following conversations"]
+            },
         "misplacing" : {
             "question": "Have you noticed new problems misplacing things and being unable to retrace your steps that happen often and disrupt daily life?",
-            "examples" : ["Putting things in unusual places", "Being unable to retrace steps to find an item."],
-            "group": WARNING_SIGN},
+            "examples" : ["Putting things in unusual places", "Being unable to retrace steps to find an item."]
+            },
         "judgment" : {
             "question": "Have you noticed new poor decisions or poor judgment that happen often and disrupt daily life?",
-            "examples" : ["Unwise decisions with money", "Paying less attention to grooming"],
-            "group": WARNING_SIGN},
+            "examples" : ["Unwise decisions with money", "Paying less attention to grooming"]
+            },
         "mood_personality" : {
                     "question": "Have you noticed new changes in mood or personality that happen often and disrupt daily life?",
-                    "examples" : ["Increased anxiety", "Personality changes"],
-                    "group": WARNING_SIGN},
+                    "examples" : ["Increased anxiety", "Personality changes"]
+                    },
         "withdrawal" : {
                     "question": "Have you noticed new withdrawal from work, hobbies or social activities that happens often and disrupts daily life?",
-                    "examples" : ["Dropping hobbies or social activities", "Avoiding family gatherings or work"],
-                    "group": WARNING_SIGN},
+                    "examples" : ["Dropping hobbies or social activities", "Avoiding family gatherings or work"]
+                    },
         "planning" : {
                     "question": "Have you noticed new difficulty planning or solving problems that happens often and disrupts daily life?",
-                    "examples" : ["Trouble following a familiar recipe", "Trouble keeping track of monthly bills"],
-                    "group": WARNING_SIGN},
+                    "examples" : ["Trouble following a familiar recipe", "Trouble keeping track of monthly bills"]
+                    },
         "visual_spatial" : {
                     "question": "Have you noticed new trouble understanding what you see or judging distances that happens often and disrupts daily life?",
-                    "examples" : ["Trouble understanding visual and spatial relationships","Difficulty reading", "Difficulty judging distance"],
-                    "group": WARNING_SIGN},      
+                    "examples" : ["Trouble understanding visual and spatial relationships","Difficulty reading", "Difficulty judging distance"]
+                    }      
 }  
 
 # additional follow up-questions
@@ -151,7 +149,7 @@ class RuleAlzheimer:
         self.answer = answer
         self.assumption = "Team assumption"
         self.confidence_disclaimer = (
-            "Note: Confidence scores (0.0-1.0) reflect rule-matching strength and data completeness, NOT calibrated clinical probability."
+            "Note: Confidence scores reflect rule-matching strength and data completeness, NOT calibrated clinical probability."
         )
     def calculate_confidence(self,weighted_prob:float):
         '''
@@ -361,14 +359,14 @@ goals = {
 
 
 '''
-certainty weights
+certainty weights from team assumption
 	• 0 sign: 0.00 
 	• 1 sign: 0.40 
 	• 2 signs: 0.60 
 	• 3-4 signs: 0.70 
 	• 5 signs: 0.80 
 	• 6+ signs: 0.90 
- (CDC notes 1 disruptive sign warrants a doctor visit)
+ (According to the CDC, 1 disruptive sign warrants a doctor visit)
 '''
 
 '''
